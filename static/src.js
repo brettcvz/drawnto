@@ -1,4 +1,13 @@
 var globals = {};
+var ui = {
+    rows: 3,
+    cols: 3,
+    gridSize: 200,
+    buttonSize: 80,
+    nubRadius: 20,
+    lineWidth: 4
+};
+
 /*Button*/
 var buttons = {};
 var Button = function(x, y) {
@@ -16,41 +25,44 @@ Button.get = function(x, y) {
 
 Button.prototype._render = function(){
     this._dom = $("<div></div>").addClass("button");
+    this._dom.width(ui.buttonSize).height(ui.buttonSize);
     var nub = $("<div></div>").addClass("nub");
+    nub.width(ui.nubRadius * 2).height(ui.nubRadius * 2);
+    nub.css('border-radius', ui.nubRadius);
+    margin = ui.buttonSize / 2 - ui.nubRadius;
+    nub.css('margin', margin);
     this._dom.append(nub);
 
     //calculate position
-    var width = 100;
-    var height = 100;
-    var offsetX = 10;
-    var offsetY = 10;
-    this._dom.css("left", offsetX + width * this.x);
-    this._dom.css("top", offsetY + height * this.y);
+    var offset = (ui.gridSize - ui.buttonSize) / 2;
+    this._dom.css("left", offset + ui.gridSize * this.x);
+    this._dom.css("top", offset + ui.gridSize * this.y);
 
     this.setupListeners();
 };
 
 Button.prototype.setupListeners = function() {
     var curr = this;
-    this._dom.on('mousedown', function(){
+    this._dom.on('touchstart', function(){
         globals.drawing = true;
         globals.last = curr;
         curr.activate();
         return false;
     });
-    this._dom.on('mouseenter', function(){
+    this._dom.on('touchmove', function(){
         if (globals.drawing) {
             if (globals.last) {
                 var line = Line.get(curr, globals.last);
                 if (line) {
                     line.active = true;
                     line.draw();
+                    globals.last = curr;
+                    curr.activate();
                 } else {
-                    console.log("No line between", curr, globals.last);
+                    //up
+                    globals.drawing = false;
                 }
             }
-            globals.last = curr;
-            curr.activate();
         }
         return false;
     });
@@ -71,7 +83,7 @@ Button.prototype.draw = function(){
 };
 
 Button.prototype.cmp = function(button2){
-    return (this.y * 3 + this.x) - (button2.y * 3 + button2.x);
+    return (this.y * ui.rows + this.x) - (button2.y * ui.rows + button2.x);
 };
 
 var lines = {};
@@ -116,34 +128,39 @@ Line.prototype._render = function(){
     this._dom.toggleClass("down", this.down);
 
     //calculate position
-    var width = 100;
-    var height = 100;
-    var x = width * this.b1.x;
-    var y = width * this.b1.y;
+    var x = ui.gridSize * this.b1.x;
+    var y = ui.gridSize * this.b1.y;
 
+    var length;
     if (this.right) {
         if (this.down) {
             // '\'
-            x += 25;
-            y += 90;
+            x += ui.gridSize * 0.29;
+            y += ui.gridSize;
+            length = ui.gridSize * 1.414;
         } else {
             // '-'
-            x += 40;
-            y += 40;
+            x += ui.gridSize / 2;
+            y += ui.gridSize / 2;
+            length = ui.gridSize;
         }
     } else if (this.down) {
         if (this.left) {
             // '/'
-            x += -72;
-            y += 90;
+            x += -ui.gridSize * 0.71;
+            y += ui.gridSize;
+            length = ui.gridSize * 1.414;
         } else {
             // '|'
             x += 0;
-            y += 80;
+            y += ui.gridSize;
+            length = ui.gridSize;
         }
     }
     this._dom.css("left", x);
     this._dom.css("top", y);
+    this._dom.css("width", length);
+    this._dom.css("border-width", ui.lineWidth);
 };
 
 Line.prototype.draw = function(){
@@ -156,33 +173,37 @@ Line.prototype.draw = function(){
 };
 
 $(function(){
+    var width = $(window).width();
+    console.log(width);
+    ui.gridSize = width / 4;
+    ui.buttonSize = ui.gridSize * 0.8;
+    ui.nubRadius = ui.buttonSize * 0.25;
+    ui.lineWidth = ui.nubRadius * 0.15;
     var pattern = $(".pattern-container");
+    pattern.css("margin-left", width/8);
     var buttons = [];
-    for (var i = 0; i < 9; i++) {
-        var x = i % 3;
-        var y = ~~(i / 3);
-        var button = new Button(x,y);
-        pattern.append(button.draw());
-        //adding lines
-        for (var j = 0; j < buttons.length; j++) {
-            var b1 = buttons[j];
-            console.log(b1, button, Line.isValid(b1, button), Line.get(b1, button));
-            if (Line.isValid(b1, button) && !Line.get(b1, button)){
-                var line = new Line(b1, button);
-                pattern.append(line.draw());
+    for (var x = 0; x < ui.cols; x++) {
+        for (var y = 0; y < ui.rows; y++) {
+            var button = new Button(x,y);
+            pattern.append(button.draw());
+            //adding lines
+            for (var j = 0; j < buttons.length; j++) {
+                var b1 = buttons[j];
+                if (Line.isValid(b1, button) && !Line.get(b1, button)){
+                    var line = new Line(b1, button);
+                    pattern.append(line.draw());
+                }
             }
+            buttons.push(button);
         }
-        buttons.push(button);
     }
+
     var drawing = false;
-    pattern.on('mousedown', function(){
+    pattern.on('mousedown touchstart', function(){
         globals.drawing = true;
         return false;
     });
-    $(window).on('mouseup', function(){
+    $(window).on('mouseup touchend', function(){
         globals.drawing = false;
     });
 });
-
-function setup(button) {
-};
