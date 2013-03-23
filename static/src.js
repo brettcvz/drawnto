@@ -72,7 +72,7 @@ Button.prototype.activate = function() {
                 this.active = false;
                 finish();
             }
-        } else {
+        } else if (last != this) {
             globals.stack.push(this);
         }
     }
@@ -181,8 +181,8 @@ Line.prototype.draw = function(){
 $(function(){
     var width = $(window).width();
     ui.gridSize = width / 4;
-    ui.buttonSize = ui.gridSize * 0.8;
-    ui.nubRadius = ui.buttonSize * 0.25;
+    ui.buttonSize = ui.gridSize * 0.6;
+    ui.nubRadius = ui.buttonSize * 0.4;
     ui.lineWidth = ui.nubRadius * 0.15;
     var pattern = $(".pattern-container");
     var offset = width/8;
