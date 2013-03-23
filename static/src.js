@@ -43,33 +43,35 @@ Button.prototype._render = function(){
 
 Button.prototype.setupListeners = function() {
     var curr = this;
-    this._dom.on('touchstart', function(){
+    this._dom.on('mousedown touchstart', function(){
         globals.drawing = true;
-        globals.last = curr;
         curr.activate();
         return false;
     });
-    this._dom.on('touchmove', function(){
-        if (globals.drawing) {
-            if (globals.last) {
-                var line = Line.get(curr, globals.last);
-                if (line) {
-                    line.active = true;
-                    line.draw();
-                    globals.last = curr;
-                    curr.activate();
-                } else {
-                    //up
-                    globals.drawing = false;
-                }
-            }
-        }
+    this._dom.on('mouseenter', function(){
+        curr.activate();
         return false;
     });
 };
 
 Button.prototype.activate = function() {
-    this.active = true;
+    if (globals.drawing) {
+        this.active = true;
+        if (globals.last && globals.last != this) {
+            var line = Line.get(this, globals.last);
+            if (line) {
+                line.active = true;
+                line.draw();
+                globals.last = this;
+            } else {
+                //up
+                globals.drawing = false;
+                this.active = false;
+            }
+        } else {
+            globals.last = this;
+        }
+    }
     this.draw();
 };
 
@@ -174,13 +176,13 @@ Line.prototype.draw = function(){
 
 $(function(){
     var width = $(window).width();
-    console.log(width);
     ui.gridSize = width / 4;
     ui.buttonSize = ui.gridSize * 0.8;
     ui.nubRadius = ui.buttonSize * 0.25;
     ui.lineWidth = ui.nubRadius * 0.15;
     var pattern = $(".pattern-container");
-    pattern.css("margin-left", width/8);
+    var offset = width/8;
+    pattern.css("margin-left", offset);
     var buttons = [];
     for (var x = 0; x < ui.cols; x++) {
         for (var y = 0; y < ui.rows; y++) {
@@ -203,6 +205,21 @@ $(function(){
         globals.drawing = true;
         return false;
     });
+    pattern.on('touchmove', function(e){
+        var touch = e.originalEvent.touches[0];
+        var x = touch.clientX;
+        var y = touch.clientY;
+        //calculate position
+        x -= offset;
+        var col = ~~(x / ui.gridSize);
+        var row = ~~(y / ui.gridSize);
+        var xhit = Math.abs((col + 0.5) * ui.gridSize - x) < ui.buttonSize / 2;
+        var yhit = Math.abs((row + 0.5) * ui.gridSize - y) < ui.buttonSize / 2;
+        if (xhit && yhit) {
+            Button.get(col, row).activate();
+        }
+    });
+
     $(window).on('mouseup touchend', function(){
         globals.drawing = false;
     });
