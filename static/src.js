@@ -8,7 +8,9 @@ var ui = {
     gridSize: 200,
     buttonSize: 80,
     nubRadius: 20,
-    lineWidth: 4
+    lineWidth: 4,
+    offsetX: 100,
+    offsetY: 100
 };
 
 /*Button*/
@@ -185,8 +187,9 @@ $(function(){
     ui.nubRadius = ui.buttonSize * 0.4;
     ui.lineWidth = ui.nubRadius * 0.15;
     var pattern = $(".pattern-container");
-    var offset = width/8;
-    pattern.css("margin-left", offset);
+    ui.offsetX = width/8;
+    ui.offsetY = 100;
+    pattern.css("margin-left", ui.offsetX);
     var buttons = [];
     for (var x = 0; x < ui.cols; x++) {
         for (var y = 0; y < ui.rows; y++) {
@@ -213,11 +216,13 @@ $(function(){
         var x = touch.clientX;
         var y = touch.clientY;
         //calculate position
-        x -= offset;
+        x -= ui.offsetX;
+        y -= ui.offsetY;
         var col = Math.min(~~(x / ui.gridSize), ui.cols - 1);
         var row = Math.min(~~(y / ui.gridSize), ui.rows - 1);
         var xhit = Math.abs((col + 0.5) * ui.gridSize - x) < ui.buttonSize / 2;
         var yhit = Math.abs((row + 0.5) * ui.gridSize - y) < ui.buttonSize / 2;
+        console.log(col, row, xhit, yhit);
         if (xhit && yhit) {
             var button = Button.get(col, row).activate();
         }
