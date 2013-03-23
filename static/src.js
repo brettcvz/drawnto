@@ -1,4 +1,7 @@
-var globals = {};
+var globals = {
+    drawing: false,
+    stack: []
+};
 var ui = {
     rows: 3,
     cols: 3,
@@ -57,19 +60,20 @@ Button.prototype.setupListeners = function() {
 Button.prototype.activate = function() {
     if (globals.drawing) {
         this.active = true;
-        if (globals.last && globals.last != this) {
-            var line = Line.get(this, globals.last);
+        var last = globals.stack.length ? globals.stack[globals.stack.length - 1] : undefined;
+        if (last && last != this) {
+            var line = Line.get(this, last);
             if (line) {
                 line.active = true;
                 line.draw();
-                globals.last = this;
+                globals.stack.push(this);
             } else {
                 //up
-                globals.drawing = false;
                 this.active = false;
+                finish();
             }
         } else {
-            globals.last = this;
+            globals.stack.push(this);
         }
     }
     this.draw();
@@ -200,7 +204,6 @@ $(function(){
         }
     }
 
-    var drawing = false;
     pattern.on('mousedown touchstart', function(){
         globals.drawing = true;
         return false;
@@ -211,16 +214,39 @@ $(function(){
         var y = touch.clientY;
         //calculate position
         x -= offset;
-        var col = ~~(x / ui.gridSize);
-        var row = ~~(y / ui.gridSize);
+        var col = Math.min(~~(x / ui.gridSize), ui.cols - 1);
+        var row = Math.min(~~(y / ui.gridSize), ui.rows - 1);
         var xhit = Math.abs((col + 0.5) * ui.gridSize - x) < ui.buttonSize / 2;
         var yhit = Math.abs((row + 0.5) * ui.gridSize - y) < ui.buttonSize / 2;
         if (xhit && yhit) {
-            Button.get(col, row).activate();
+            var button = Button.get(col, row).activate();
         }
     });
 
     $(window).on('mouseup touchend', function(){
-        globals.drawing = false;
+        finish();
     });
 });
+
+var finish = function(){
+    var code = globals.stack.map(function(button){
+        return button.x * ui.cols + button.y;
+    });
+    console.log(code.join(","));
+    alert(code.join(","));
+    reset();
+};
+var reset = function(){
+    globals.stack = [];
+    globals.drawing = false;
+    for (var x in buttons) {
+        for (var y in buttons[x]) {
+            buttons[x][y].active = false;
+            buttons[x][y].draw();
+        }
+    }
+    for (var key in lines) {
+        lines[key].active = false;
+        lines[key].draw();
+    }
+};

@@ -4,6 +4,10 @@ body, html {
     margin: 0;
 }
 
+.pattern {
+    margin-top: 100px;
+}
+
 .pattern-container {
     position: relative;
     background: #F66;
