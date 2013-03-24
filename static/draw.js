@@ -76,14 +76,31 @@ var finish = function(){
     if (code.length) {
         var sequence = code.join(",");
         console.log(code.join(","));
-        $.getJSON("/lookup", {sequence: sequence}, function(data){
-            var go = confirm("Go to "+data.name+" ("+data.url+")?");
-            if (go) {
-                window.location.href = data.url;
+        $.ajax({
+            url: "/lookup",
+            data: {sequence: sequence},
+            dataType: 'json',
+            success: function(data){
+                if (!data.url) {
+                    alert('Sequence not found');
+                } else {
+                    var go = confirm("Go to "+data.name+" ("+data.url+")?");
+                    if (go) {
+                        window.location.href = data.url;
+                    }
+                }
+                reset();
+            },
+            error: function(jqXHR){
+                if (jqXHR.status == 404) {
+                    alert('Sequence not found');
+                } else {
+                    alert('Error in lookup up sequence, please try again');
+                }
+                reset();
             }
         });
     }
-    reset();
 };
 var reset = function(){
     globals.stack = [];
