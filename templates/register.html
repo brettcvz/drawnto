@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="/static/button.js"></script>
+        <script src="/static/line.js"></script>
+        <script src="/static/register.js"></script>
+        <script type="text/javascript">
+            var sequence = "{{sequence}}";
+        </script>
+    </head>
+    <body>
+        <div id="register-pattern">
+            <div class="pattern-container">
+            </div>
+        </div>
+        <form method="POST" action="/register">
+            <label>Name:</label><input type="text" name="name" placeholder="Filepicker.io"/>
+            <label>URL:</label><input type="url" name="url" placeholder="http://filepicker.io"/>
+            <input type="hidden" name="sequence" value="{{sequence}}"/>
+            <input type="submit" value="Register"/>
+        </form>
+    </body>
+</html>

@@ -4,6 +4,12 @@ body, html {
     margin: 0;
 }
 
+#register-pattern {
+    height: 400px;
+    width: 400px;
+    margin: auto;
+}
+
 .pattern {
     margin-top: 100px;
 }
@@ -21,6 +27,8 @@ body, html {
 .button .nub { 
     background: #7878C2;
     border: 2px solid #669;
+    text-align: center;
+    font-family: sans-serif;
 }
 
 .button.active .nub{
