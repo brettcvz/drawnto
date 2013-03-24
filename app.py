@@ -41,14 +41,27 @@ def index():
 @app.route('/lookup')
 def lookup():
     sequence = request.args.get("sequence")
-    if not sequence:
-        return Response("Sequence not found", 404)
+    record = None
+    if sequence:
+        record = db.records.find_one({'sequence': sequence})
 
-    record = db.records.find_one({'sequence': sequence})
     if not record:
         return Response("Sequence not found", 404)
 
     return Response(json.dumps({"name": record["name"], "url": record["url"]}), content_type="text/json")
+
+
+@app.route('/display', methods=["GET"])
+def display():
+    sequence = request.args.get("sequence")
+    record = None
+    if sequence:
+        record = db.records.find_one({'sequence': sequence})
+
+    if not record:
+        return Response("Sequence not found", 404)
+    else:
+        return render_template('display.html', sequence=record['sequence'], url=record.get('url'))
 
 
 @app.route('/register', methods=["GET"])
