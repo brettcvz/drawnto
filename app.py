@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, Response, redirect
+from flask import Flask, render_template, Response, request, flash
 from mongokit import Connection, Document
 import datetime
 import json
@@ -11,8 +11,9 @@ app.static_folder = 'static'  # Enable is back, but the URL rule is
 app.add_url_rule('/static/<path:filename>',
                  endpoint='static',
                  view_func=app.send_static_file)
+app.secret_key = os.getenv('FLASK_SECRET')
 
-connection = Connection(os.getenv('MONGOHQ_URL', "mongodb://heroku:8b4ffaa4a2fe6d4c797c2c28f9250448@linus.mongohq.com:10048/app13906805"))
+connection = Connection(os.getenv('MONGOHQ_URL'))
 db = connection['app13906805']
 
 
@@ -39,7 +40,6 @@ def index():
 
 @app.route('/lookup')
 def lookup():
-    from flask import request
     sequence = request.args.get("sequence")
     if not sequence:
         return Response("Sequence not found", 404)
@@ -53,17 +53,21 @@ def lookup():
 
 @app.route('/register', methods=["GET"])
 def get_register():
-    #get next unused sequence
-    record = db.records.find_one({'used': False})
-    if not record:
-        return Response("No available sequences")
+    sequence = request.args.get("sequence")
+    if sequence:
+        record = db.records.find_one({'sequence': sequence})
+        if not record:
+            return Response("Sequence not found", 404)
     else:
-        return render_template('register.html', sequence=record['sequence'])
+        record = db.records.find_one({'used': False})
+        if not record:
+            return Response("No available unused sequences", 410)
+
+    return render_template('register.html', sequence=record['sequence'], url=record.get('url'), name=record.get('name'))
 
 
 @app.route('/register', methods=["POST"])
 def register():
-    from flask import request
     record = db.records.Record.find_one({'sequence': request.form['sequence']})
     record.url = unicode(request.form['url'])
     record.name = unicode(request.form['name'])
@@ -71,7 +75,8 @@ def register():
     record.registered = datetime.datetime.now()
     record.count = long(0)
     record.save()
-    return redirect("/")
+    flash("Record saved successfully, try it out on your mobile device")
+    return render_template('register.html', sequence=record['sequence'], url=record.get('url'), name=record.get('name'))
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.

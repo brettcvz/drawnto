@@ -61,11 +61,11 @@ if __name__ == '__main__':
     seqs = generate_choices()
     sixers = filter(lambda x: len(x) == 6, seqs)
 
-    import random
-    seq = random.choice(sixers)
-    print_seq(seq)
-    store_sequence(seq)
+    for seq in sixers:
+        store_sequence(seq)
+    """
     print "Total sequences: %d" % (len(seqs))
     print "Of length:"
     for i in range(COUNT + 1):
         print "%d: %d" % (i, len(filter(lambda x: len(x) == i, seqs)))
+    """

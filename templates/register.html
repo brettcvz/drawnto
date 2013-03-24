@@ -15,9 +15,18 @@
             <div class="pattern-container">
             </div>
         </div>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class=flashes>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
         <form method="POST" action="/register">
-            <label>Name:</label><input type="text" name="name" placeholder="Filepicker.io"/>
-            <label>URL:</label><input type="url" name="url" placeholder="http://filepicker.io"/>
+            <label>Name:</label><input type="text" name="name" placeholder="Filepicker.io" value="{{name}}"/>
+            <label>URL:</label><input type="url" name="url" placeholder="http://filepicker.io" value="{{url}}"/>
             <input type="hidden" name="sequence" value="{{sequence}}"/>
             <input type="submit" value="Register"/>
         </form>

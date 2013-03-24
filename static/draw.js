@@ -77,7 +77,7 @@ var finish = function(){
         var sequence = code.join(",");
         console.log(code.join(","));
         $.getJSON("/lookup", {sequence: sequence}, function(data){
-            var go = confirm("Go to "+data.name+"?");
+            var go = confirm("Go to "+data.name+" ("+data.url+")?");
             if (go) {
                 window.location.href = data.url;
             }

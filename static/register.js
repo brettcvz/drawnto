@@ -35,8 +35,8 @@ $(function(){
     console.log(seq);
     for (var i = 0; i < seq.length; i++) {
         var index = parseInt(seq[i], 10);
-        y = index % ui.cols;
-        x = ~~(index / ui.rows);
+        x = index % ui.cols;
+        y = ~~(index / ui.rows);
         Button.get(x,y).activate();
     }
 });
